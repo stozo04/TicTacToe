@@ -46,7 +46,6 @@
     <Compile Include="Board.cs" />
     <Compile Include="Exceptions\InvalidNodeException.cs" />
     <Compile Include="Exceptions\InvalidMoveException.cs" />
-    <Compile Include="Extensions\ListExtension.cs" />
     <Compile Include="GridBaseBoard.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="Node.cs" />
@@ -61,6 +60,8 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

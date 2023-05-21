@@ -5,17 +5,7 @@ namespace TicTacToe
 {
     class Program
     {
-        /// <summary>
-        /// The main TreeSearch instance, used to represent and explore the game tree
-        /// </summary>
-        private static TreeSearch<Node> mcts;
-
-        /// <summary>
-        /// The starting game board, chosen by the user
-        /// </summary>
-        private static Board board;
-
-        private static bool isGameOver = false;
+      
 
         static void Main(string[] args)
         {
@@ -55,11 +45,7 @@ namespace TicTacToe
                 }
                 else
                 {
-                    int remainingMoves = board.PossibleMoves().Count;
-                    for (var i = 0; i < remainingMoves; i++)
-                    {
-                        mcts.Step();
-                    }
+
                    // mcts.Step();
 
                     Node bestNode = mcts.BestNodeChoice();
