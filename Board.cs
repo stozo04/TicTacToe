@@ -25,12 +25,11 @@ namespace TicTacToe
             CurrentPlayer = Player_1;
             Position = new Dictionary<Tuple<int, int>, string>();
 
-
-            for (int row = 0; row <= 3; row++)
+            for (int row = 0; row < 3; row++)
             {
-                for (int col = 0; col <= 3; col++)
+                for (int col = 0; col < 3; col++)
                 {
-                    Position[new Tuple<int, int>(row, col)] = Empty_Square;
+                    Position[Tuple.Create(row, col)] = Empty_Square;
                 }
             }
         }
@@ -40,7 +39,8 @@ namespace TicTacToe
         {
             Player_1 = board.Player_1;
             Player_2 = board.Player_2;
-            Position = board.Position;
+            CurrentPlayer = board.CurrentPlayer;
+            Position = new Dictionary<Tuple<int, int>, string>(board.Position);
         }
 
         public void Print(Board board)
@@ -51,16 +51,16 @@ namespace TicTacToe
                 for (int col = 0; col < 3; col++)
                 {
                     string key = $"({row},{col})";
-                    if (board.Position.TryGetValue(new Tuple<int, int>(row, col), out string value))
+                    if (board.Position.TryGetValue(Tuple.Create(row, col), out string value))
                     {
-                        //Console.Write($"{key}: {value} ");
+                        // Console.Write($"{key}: {value} ");
                         boardString += value;
                     }
                 }
                 boardString += "\n";
             }
 
-            if(board.CurrentPlayer == Player_1)
+            if (board.CurrentPlayer == Player_1)
             {
                 boardString = $"\n ---------- \n '{Player_1.Name}' Turn: \n ---------- \n" + boardString;
             }
@@ -74,10 +74,10 @@ namespace TicTacToe
         public Board Move(int row, int col)
         {
             // Create new board instance
-            Board board = new Board();
+            Board board = new Board(this);
 
             // Make move
-            board.Position[new Tuple<int, int>(row, col)] = Player_1.Name;
+            board.Position[Tuple.Create(row, col)] = board.CurrentPlayer.Name;
 
             // Switch Players
             board.CurrentPlayer = (CurrentPlayer == Player_1) ? Player_2 : Player_1;
