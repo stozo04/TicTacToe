@@ -43,19 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Board.cs" />
     <Compile Include="Exceptions\InvalidNodeException.cs" />
     <Compile Include="Exceptions\InvalidMoveException.cs" />
-    <Compile Include="GridBaseBoard.cs" />
-    <Compile Include="Move.cs" />
-    <Compile Include="Node.cs" />
-    <Compile Include="Point.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ThreadSafeRandom.cs" />
-    <Compile Include="TicTacToeBoard.cs" />
-    <Compile Include="TicTacToeMove.cs" />
-    <Compile Include="TreeSearch.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
