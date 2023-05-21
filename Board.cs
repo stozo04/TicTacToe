@@ -78,12 +78,68 @@ namespace TicTacToe
 
             // Make move
             board.Position[Tuple.Create(row, col)] = board.CurrentPlayer.Name;
+            
 
-            // Switch Players
-            board.CurrentPlayer = (CurrentPlayer == Player_1) ? Player_2 : Player_1;
+            // Switch Players (do not switch if the game is over)
+            if(!IsTie(board) || !HasWinner(board)){
+                board.CurrentPlayer = (CurrentPlayer == Player_1) ? Player_2 : Player_1;
+            }
 
             // return new board state
             return board;
+        }
+
+        public bool IsTie(Board board)
+        {
+            return (board.Position.Values.Contains(Empty_Square) ? false : true);
+        }
+
+        public bool HasWinner(Board board)
+        {
+            // Check for vertical matches
+            for (int col = 0; col < 3; col++)
+            {
+                string symbol = board.Position[Tuple.Create(0, col)];
+                if (symbol != board.Empty_Square &&
+                    symbol == board.Position[Tuple.Create(1, col)] &&
+                    symbol == board.Position[Tuple.Create(2, col)])
+                {
+                    return true;
+                }
+            }
+
+            // Check for horizontal matches
+            for (int row = 0; row < 3; row++)
+            {
+                string symbol = board.Position[Tuple.Create(row, 0)];
+                if (symbol != board.Empty_Square &&
+                    symbol == board.Position[Tuple.Create(row, 1)] &&
+                    symbol == board.Position[Tuple.Create(row, 2)])
+                {
+                    return true;
+                }
+            }
+
+            // Check for right diagonal match
+            string rightDiagonalSymbol = board.Position[Tuple.Create(0, 0)];
+            if (rightDiagonalSymbol != board.Empty_Square &&
+                rightDiagonalSymbol == board.Position[Tuple.Create(1, 1)] &&
+                rightDiagonalSymbol == board.Position[Tuple.Create(2, 2)])
+            {
+                return true;
+            }
+
+            // Check for left diagonal match
+            string leftDiagonalSymbol = board.Position[Tuple.Create(0, 2)];
+            if (leftDiagonalSymbol != board.Empty_Square &&
+                leftDiagonalSymbol == board.Position[Tuple.Create(1, 1)] &&
+                leftDiagonalSymbol == board.Position[Tuple.Create(2, 0)])
+            {
+                return true;
+            }
+
+            // No winner found
+            return false;
         }
     }
 }

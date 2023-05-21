@@ -16,8 +16,21 @@ namespace TicTacToe
             //board.Print(board);
             Board board1 = board.Move(0, 0);
             board.Print(board1);
+            if (board1.IsTie(board1))
+            {
+                Console.WriteLine($"Tied Game!");
+                Console.Read();
+            }
+            if (board1.HasWinner(board1))
+            {
+                Console.WriteLine($"{board.CurrentPlayer} Won!");
+                Console.Read();
+            }
+
             Console.WriteLine($"Current Player: {board1.CurrentPlayer.Name}");
             board1.Print(board1);
+            Console.WriteLine($"Is tied game: {board.IsTie(board1)}");
+            Console.WriteLine($"Is Winner: {board.HasWinner(board1)}");
             Console.Read();
  
         }
