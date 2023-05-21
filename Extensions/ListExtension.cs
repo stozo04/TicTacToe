@@ -18,8 +18,7 @@ namespace TicTacToe.Extensions
         /// <returns>The randomly chosen list element</returns>
         public static T PickRandom<T>(this IList<T> source)
         {
-            Random r = new Random();
-            return source[r.Next(0, source.Count)];
+            return source[ThreadSafeRandom.Rand(0, source.Count)];
         }
     }
 }

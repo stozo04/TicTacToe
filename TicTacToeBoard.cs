@@ -80,6 +80,8 @@ namespace TicTacToe
             }
             else
             {
+                possibleMoves.Remove(m);
+
                 throw new InvalidMoveException("Move has already been made at: " + m.ToString());
             }
         }

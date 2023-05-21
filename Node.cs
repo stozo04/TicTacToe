@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TicTacToe.Exceptions;
 using TicTacToe.Extensions;
 
 namespace TicTacToe
@@ -81,19 +82,28 @@ namespace TicTacToe
             }
 
             //Create a new child node
-            Move move = (Move)UnexpandedMoves.PickRandom();
+            Node returnNode = null;
+            while(returnNode is null)
+            {
+                try
+                {
 
-            Board newBoard = GameBoard.Duplicate();
-            newBoard.MakeMove(move);
-
-            //Create a child node with the same type as this node, initialise it, and add it to the list of Children
-            Node child = (Node)Activator.CreateInstance(GetType());
-            child.Initialise(this, newBoard);
-            Children.Add(child);
-
-            UnexpandedMoves.Remove(move);
-
-            return child;
+                    Move move = (Move)UnexpandedMoves.PickRandom();
+                    Board newBoard = GameBoard.Duplicate();
+                    newBoard.MakeMove(move);
+                    //Create a child node with the same type as this node, initialise it, and add it to the list of Children
+                    Node child = (Node)Activator.CreateInstance(GetType());
+                    child.Initialise(this, newBoard);
+                    Children.Add(child);
+                    UnexpandedMoves.Remove(move);
+                    returnNode = child;
+                }catch(InvalidMoveException e)
+                {
+                    // Continue until we get a valid move
+                }
+            }
+            
+            return returnNode;           
         }
 
         /// <summary>

@@ -128,12 +128,13 @@ namespace TicTacToe
         /// </summary>
         /// <param name="n">The root node to choose the best child of</param>
         /// <returns>The best child of the given root node</returns>
-        public Node BestNodeChoice(Node n)
+        public Node BestNodeChoice()
         {
+            Node rootNode = Selection(Root);
             float smallestScore = float.MinValue;
             Node chosenNode = null;
 
-            foreach (Node child in n.Children)
+            foreach (Node child in rootNode.Children)
             {
                 //Choose the child with the best score, if multiple children have the best score, then choose the one with the least children
                 if (child.AverageScore > smallestScore || child.AverageScore == smallestScore && chosenNode.Children.Count > child.Children.Count)

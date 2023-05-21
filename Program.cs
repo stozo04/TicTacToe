@@ -21,14 +21,14 @@ namespace TicTacToe
         {
             board = new TicTacToeBoard();
             mcts = new TreeSearch<Node>(board);
-
+            Console.WriteLine("Welcome to the game!");
             while (!isGameOver)
             {
 
                 if (board.CurrentPlayer == 1)
                 {
                     Console.Clear();
-                    Console.WriteLine("Welcome to the game!");
+                    
                     Console.WriteLine("-------------------");
                     Console.WriteLine("");
                     board.Draw();
@@ -46,16 +46,26 @@ namespace TicTacToe
                     Console.WriteLine("");
                     // Read user input
                     int move = Convert.ToInt32(Console.ReadLine());
-
+                    Console.WriteLine("");
                     board.PerformUserAction(move);
                     board.Draw();
+                    Console.WriteLine("");
                     // startingBoard.MakeMove(move)
                     // mcts.Step();
                 }
                 else
                 {
-                    mcts.Step();
+                    int remainingMoves = board.PossibleMoves().Count;
+                    for (var i = 0; i < remainingMoves; i++)
+                    {
+                        mcts.Step();
+                    }
+                   // mcts.Step();
+
+                    Node bestNode = mcts.BestNodeChoice();
+                    //board.
                     board.Draw();
+                    Console.WriteLine("");
                 }
             }
         }
