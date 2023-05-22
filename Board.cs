@@ -81,12 +81,36 @@ namespace TicTacToe
             
 
             // Switch Players (do not switch if the game is over)
-            if(!IsTie(board) || !HasWinner(board)){
-                board.CurrentPlayer = (CurrentPlayer == Player_1) ? Player_2 : Player_1;
-            }
-
+            //if(!IsTie(board) || !HasWinner(board)){
+            //    board.CurrentPlayer = (CurrentPlayer == Player_1) ? Player_2 : Player_1;
+            //}
+            board.CurrentPlayer = (CurrentPlayer == Player_1) ? Player_2 : Player_1;
             // return new board state
             return board;
+        }
+
+        // Generate legal moves to play in the current position
+        public List<Board> GenerateStates(Board board)
+        {
+            // Define states list (move list - list of available actions to consider)
+           List<Board> actions = new List<Board>();
+
+            // Loop over board rows
+            for (int row = 0; row < 3; row++)
+            {
+                // Loop over board columns
+                for (int col = 0; col < 3; col++)
+                {
+                    if(board.Position[Tuple.Create(row, col)] == Empty_Square)
+                    {
+                        // Append available action/board state
+                        actions.Add(Move(row, col));
+                    }
+                }
+            }
+
+            // Return the list of available actions (board class instances)
+            return actions;
         }
 
         public bool IsTie(Board board)
