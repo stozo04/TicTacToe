@@ -39,34 +39,47 @@ namespace TicTacToe
         //}
 
         // Shows all available moves
+        //static void Main(string[] args)
+        //{
+        //    // Create board instance
+        //    Board board = new Board();
+        //    Console.WriteLine("Initial board state: ");
+        //    board.Print(board);
+
+        //    // Generate available actions
+        //    List<Board> actions = board.GenerateStates(board);
+
+        //    // Take action (make move on board)
+        //    board = actions.FirstOrDefault();
+
+        //    // Print updated board state
+        //    Console.WriteLine("First move has been made: ");
+        //    board.Print(board);
+
+        //    // Generate available actions after first move has been made
+        //    actions = board.GenerateStates(board);
+        //    board = actions[3];
+        //    board.Print(board);
+
+        //    // Generate available actions after first move has been made
+        //    actions = board.GenerateStates(board);
+        //    Console.WriteLine("---- Available Moves --------");
+        //    if (actions.Any())
+        //    {
+        //        foreach (Board action in actions)
+        //        {
+        //            board.Print(action);
+        //        }
+        //    }
+
+        //    Console.Read();
+        //}
+
         static void Main(string[] args)
         {
+            // Create board instance
             Board board = new Board();
-            Console.WriteLine("Initial board state: ");
-            board.Print(board);
-
-            List<Board> actions = board.GenerateStates(board);
-
-            //if (actions.Any())
-            //{
-            //    foreach (Board action in actions)
-            //    {
-            //        board.Print(action);
-            //    }
-            //}
-            board = actions.FirstOrDefault();
-            Console.WriteLine("First move has been made: ");
-            board.Print(board);
-
-            // Generate available actions after first move has been made
-            actions = board.GenerateStates(board);
-            if (actions.Any())
-            {
-                foreach (Board action in actions)
-                {
-                    board.Print(action);
-                }
-            }
+            board.GameLoop();           
 
             Console.Read();
         }

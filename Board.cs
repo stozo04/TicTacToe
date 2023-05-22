@@ -60,7 +60,7 @@ namespace TicTacToe
                 boardString += "\n";
             }
 
-            if (board.CurrentPlayer == Player_1)
+            if (board.CurrentPlayer.Name == Player_1.Name)
             {
                 boardString = $"\n ---------- \n '{Player_1.Name}' Turn: \n ---------- \n" + boardString;
             }
@@ -71,22 +71,22 @@ namespace TicTacToe
             Console.WriteLine($"{boardString}");
         }
 
-        public Board Move(int row, int col)
+        public Board Move(Board board, int row, int col)
         {
             // Create new board instance
-            Board board = new Board(this);
+            Board newBoard = board;
 
             // Make move
-            board.Position[Tuple.Create(row, col)] = board.CurrentPlayer.Name;
-            
+            newBoard.Position[Tuple.Create(row, col)] = newBoard.CurrentPlayer.Name;
+
 
             // Switch Players (do not switch if the game is over)
             //if(!IsTie(board) || !HasWinner(board)){
             //    board.CurrentPlayer = (CurrentPlayer == Player_1) ? Player_2 : Player_1;
             //}
-            board.CurrentPlayer = (CurrentPlayer == Player_1) ? Player_2 : Player_1;
+            newBoard.CurrentPlayer = (newBoard.CurrentPlayer.Name == Player_1.Name) ? Player_2 : Player_1;
             // return new board state
-            return board;
+            return newBoard;
         }
 
         // Generate legal moves to play in the current position
@@ -104,7 +104,7 @@ namespace TicTacToe
                     if(board.Position[Tuple.Create(row, col)] == Empty_Square)
                     {
                         // Append available action/board state
-                        actions.Add(Move(row, col));
+                        actions.Add(Move(board, row, col));
                     }
                 }
             }
@@ -164,6 +164,48 @@ namespace TicTacToe
 
             // No winner found
             return false;
+        }
+
+        public void GameLoop()
+        {
+            Console.WriteLine("\n   Tic Tac Toe by Steven Gates\n");
+            Console.WriteLine("   Type 'exit' to quit the game");
+            Console.WriteLine("   Move format [x,y]: 1,2 where 1 is column and 2 is row.");
+
+            // Print Board
+            Board board = new Board();
+            Print(board);
+
+            while (true)
+            {
+                var userInput = Console.ReadLine().ToLower();
+
+                Console.WriteLine($"User Input: {userInput}");
+
+                // Check if user wants to exit
+                if (userInput == "exit") { Environment.Exit(0); }
+
+                // Skip empty input
+                if (userInput == "") { continue; }
+
+                // Parse user input (move format: [col (x), row (y)]: 1,2)
+                try
+                {
+                    int row = Convert.ToInt32(userInput.Split(',')[1]) - 1;
+                    int col = Convert.ToInt32(userInput.Split(',')[0]) - 1;
+
+                    // Make Move
+                    board = Move(board,row, col);
+
+                    // Print Board
+                    Print(board);
+
+                }catch(Exception e) {
+                    Console.WriteLine($"Exception {e.Message}");
+                    Console.WriteLine("Illegal Command!");
+                    Console.WriteLine("   Move format [x,y]: 1,2 where 1 is column and 2 is row.");
+                }
+            }
         }
     }
 }
