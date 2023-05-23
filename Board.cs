@@ -34,7 +34,6 @@ namespace TicTacToe
             }
         }
 
-        // Copy constructor
         public Board(Board board)
         {
             Player_1 = board.Player_1;
@@ -74,7 +73,7 @@ namespace TicTacToe
         public Board Move(Board board, int row, int col)
         {
             // Create new board instance
-            Board newBoard = board;
+            Board newBoard = board.Clone();
 
             // Make move
             newBoard.Position[Tuple.Create(row, col)] = newBoard.CurrentPlayer.Name;
@@ -104,7 +103,8 @@ namespace TicTacToe
                     if(board.Position[Tuple.Create(row, col)] == Empty_Square)
                     {
                         // Append available action/board state
-                        actions.Add(Move(board, row, col));
+                        Board newBoardWithMove = Move(board, row, col);
+                        actions.Add(newBoardWithMove);
                     }
                 }
             }
@@ -203,6 +203,8 @@ namespace TicTacToe
                     // Make Move
                     board = Move(board,row, col);
 
+                    // Make AI move on board
+
                     // Print Board
                     Print(board);
 
@@ -225,6 +227,19 @@ namespace TicTacToe
                     Console.WriteLine("   Move format [x,y]: 1,2 where 1 is column and 2 is row.");
                 }
             }
+        }
+
+        public Board Clone()
+        {
+            Board newBoard = new Board()
+            {
+                Player_1 = new Player { Name = this.Player_1.Name },
+                Player_2 = new Player { Name = this.Player_2.Name },
+                Empty_Square = string.Copy(this.Empty_Square),
+                CurrentPlayer = this.CurrentPlayer.Name == Player_1.Name ? Player_1 : Player_2,
+                Position = new Dictionary<Tuple<int, int>, string>(this.Position),
+            };
+            return newBoard;
         }
     }
 }
