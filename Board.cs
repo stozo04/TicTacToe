@@ -194,11 +194,30 @@ namespace TicTacToe
                     int row = Convert.ToInt32(userInput.Split(',')[1]) - 1;
                     int col = Convert.ToInt32(userInput.Split(',')[0]) - 1;
 
+                    if (board.Position[Tuple.Create(row, col)] != Empty_Square)
+                    {
+                        Console.WriteLine("Can not chose a move that already been played. Please choose another move.");
+                        continue;
+                    }
+
                     // Make Move
                     board = Move(board,row, col);
 
                     // Print Board
                     Print(board);
+
+                    // Check game state
+                    if (HasWinner(board))
+                    {
+                        Console.WriteLine($"Player CurrentPlayer: {board.CurrentPlayer.Name}");
+                        string winnerName = board.CurrentPlayer.Name == Player_1.Name ? Player_2.Name : Player_1.Name;
+                        Console.WriteLine($"Game Over. {winnerName} Won The Game!!");
+                    }
+
+                    if (IsTie(board))
+                    {
+                        Console.WriteLine("Game Over. We Tied!");
+                    }
 
                 }catch(Exception e) {
                     Console.WriteLine($"Exception {e.Message}");
