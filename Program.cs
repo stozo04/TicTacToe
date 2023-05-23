@@ -125,6 +125,7 @@ namespace TicTacToe
         //    Console.Read();
         //}
 
+        // Testing MTCS Rollout
         static void Main(string[] args)
         {
             // Create board instance
@@ -134,7 +135,9 @@ namespace TicTacToe
             MCTS mcts = new MCTS();
 
             // Simulate random game
-            mcts.Rollout(board);
+            int score = mcts.Rollout(board);
+
+            Console.WriteLine($"Score: {score}");
 
             Console.Read();
         }

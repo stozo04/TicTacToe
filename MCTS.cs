@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
 
 namespace TicTacToe
 {
     public class MCTS
     {
-
         public MCTS() { }
         
         // Search for the best move given a position
@@ -110,7 +105,7 @@ namespace TicTacToe
                     Random random = new Random();
                     int randomMove = random.Next(availableStates.Count);
                     board = availableStates[randomMove];
-                    board.Print(board);
+
                 }
                 catch(Exception e)
                 {
@@ -144,10 +139,7 @@ namespace TicTacToe
 
                 // Get move score using UCT Formula
                 double moveScore = currentPlayer * child.Score / child.Visits + explorationConstant * Math.Sqrt(
-               2 * Math.Log(node.Visits) / child.Visits);
-                //double moveScore = (currentPlayer * child.Score / child.Visits)
-                //    + (explorationConstant * Math.Sqrt(2 * Math.Log(node.Score) / node.Visits));
-                Console.WriteLine($"MoveScore: {moveScore}");
+                        2 * Math.Log(node.Visits) / child.Visits);
 
                 // Better move has been found
                 if (moveScore > bestScore)
@@ -160,10 +152,6 @@ namespace TicTacToe
                 {
                     bestMoves.Add(child);
                 }
-
-                // From official document
-                //double nodeValue = (node.Board.CurrentPlayer * child.TotalReward / child.NumVisits)
-                //    + (explorationConstant * Math.Sqrt(2 * Math.Log(node.NumVisits) / child.NumVisits));
             }
 
             // Return one of the best moves randomly
