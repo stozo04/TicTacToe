@@ -5,6 +5,7 @@ namespace TicTacToe
 {
     public class MCTS
     {
+        public TreeNode root { get; set; }
         public MCTS() { }
         
         // Search for the best move given a position
@@ -16,10 +17,10 @@ namespace TicTacToe
             for(var i=0; i<1000; i++)
             {
                 // Select a node
-                var node = Select(root);
+                TreeNode node = Select(root);
 
                 // Score current node (Simulation Phase)
-                var score = Rollout(node.Board);
+                int score = Rollout(node.Board);
 
                 // Backpropagate results
                 Backpropagate(node, score);
@@ -58,7 +59,7 @@ namespace TicTacToe
         private TreeNode Expand(TreeNode node)
         {
             // Generate legal states (moves) for the given node
-            var states = node.Board.GenerateStates(node.Board);
+            var states = node.Board.GenerateStates();
 
             // Loop over generated states (moves)
             foreach (var state in states)
@@ -91,20 +92,24 @@ namespace TicTacToe
         }
 
 
+
         // Simulate the game via making random moves until reach end of game
         public int Rollout(Board board)
         {
+            Random random = new Random();
             // Make random moves for both sides untill terminal state of the game is reached
-            while (!board.HasWinner(board))
+            while (!board.IsWinner())
             {
                 // Try to make a move
                 try
                 {
                     // Make move on board
-                    List<Board> availableStates = board.GenerateStates(board);
-                    Random random = new Random();
-                    int randomMove = random.Next(availableStates.Count);
-                    board = availableStates[randomMove];
+                    List<Board> availableStates = board.GenerateStates();
+                    if (availableStates.Count == 0)
+                    {
+                        return 0;
+                    }
+                    board = availableStates[random.Next(availableStates.Count)];
 
                 }
                 catch(Exception e)
@@ -115,11 +120,24 @@ namespace TicTacToe
             }
 
             // Return score from the "X" perspective
-            return board.CurrentPlayer.Name == board.Player_1.Name ? 1 : -1;            
+            return board.Player2 == "x" ? 1 : -1;
         }
 
         // Backpropagate the number of visits and scoreup to the root node
-        public void Backpropagate(TreeNode node, int score) { }
+        public void Backpropagate(TreeNode node, int score) { 
+            // Update nodes's up to root node
+            while(node != null)
+            {
+                // Update node visit
+                node.Visits += 1;
+
+                // Update node score
+                node.Score += score;
+
+                // set nodeto parent
+                node = node.ParentNode;
+            }
+        }
 
         // Select the best node based on UCB1 Formula (or UCD)
         public TreeNode GetBestMove(TreeNode node, int explorationConstant) {
@@ -128,11 +146,11 @@ namespace TicTacToe
             int currentPlayer = 0;
             foreach (TreeNode child in node.Children.Values)
             {
-                if(child.Board.Player_2.Name.ToLower() == "x")
+                if(child.Board.Player2 == "x")
                 {
                     currentPlayer = 1;
                 }
-                if(child.Board.Player_2.Name.ToLower() == "o")
+                if(child.Board.Player2 == "o")
                 {
                     currentPlayer = -1;
                 }
@@ -140,6 +158,8 @@ namespace TicTacToe
                 // Get move score using UCT Formula
                 double moveScore = currentPlayer * child.Score / child.Visits + explorationConstant * Math.Sqrt(
                         2 * Math.Log(node.Visits) / child.Visits);
+
+                Console.WriteLine($"Move Score: {moveScore}");
 
                 // Better move has been found
                 if (moveScore > bestScore)
@@ -164,20 +184,20 @@ namespace TicTacToe
     public class TreeNode
     {
         public Board Board { get; set; }
-        public TreeNode ParentNode { get; set; }
         public bool IsTerminal { get; set; }
         public bool IsFullyExpanded { get; set; }
+        public TreeNode ParentNode { get; set; }
         public int Visits { get; set; }
         public int Score { get; set; }
         public Dictionary<string, TreeNode> Children { get; set; }
         public TreeNode(Board board, TreeNode treeNode = null)
         {
-            Board = board;
-            IsTerminal = Board.HasWinner(board) || Board.IsTie(board);
-            IsFullyExpanded = IsTerminal;
-            ParentNode = treeNode;
-            Visits = 0;
-            Children = new Dictionary<string, TreeNode>();            
+            this.Board = board;
+            this.IsTerminal = Board.IsWinner() || Board.IsTie();
+            this.IsFullyExpanded = IsTerminal;
+            this.ParentNode = treeNode;
+            this.Visits = 0;
+            this.Children = new Dictionary<string, TreeNode>();            
         }
     }
 }
