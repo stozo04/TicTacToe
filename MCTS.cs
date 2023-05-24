@@ -29,10 +29,10 @@ namespace TicTacToe
                     TreeNode node = Select(root);
 
                     // Score current node (Simulation Phase)
-                    int score = Rollout(node.Board);
+                    (int score, int depth) = Rollout(node.Board);
 
                     // Backpropagate results
-                    Backpropagate(node, score);
+                    Backpropagate(node, score, depth);
                 }
 
                 // Pick the best move in give position
@@ -150,9 +150,9 @@ namespace TicTacToe
         }
 
         // Simulate the game via making random moves until reach end of game
-        public int Rollout(Board board)
+        public (int, int) Rollout(Board board)
         {
-            
+            int depth = 9;
             // Make random moves for both sides until terminal state of the game is reached
             while (!board.IsWinner())
             {
@@ -166,7 +166,7 @@ namespace TicTacToe
                         // No moves available
                         if (board.IsTie())
                         {
-                            return 0; // Draw
+                            return (0, 0); // Draw
                         }
                         else
                         {
@@ -174,31 +174,45 @@ namespace TicTacToe
                         }
                     }
                     board = availableStates[random.Next(availableStates.Count)];
+                    depth--;  // Increment the depth after every move
                 }
                 catch (Exception e)
                 {
                     // Error occurred
                     Console.WriteLine("Error: " + e.Message);
-                    return 0; // Return draw for now
+                    return (0, 0); // Return draw for now
                 }
             }
 
-            // Return score from the Player 2 perspective
-            return board.Player2 == "o" ? 1 : -1;
+            // Return score from the Player 2 perspective and depth
+            return (board.Player2 == "o" ? 1 : -1, depth);
         }
        
         // Backpropagate the number of visits and scoreup to the root node
-        public void Backpropagate(TreeNode node, int score) { 
-            // Update nodes's up to root node
-            while(node != null)
+        public void Backpropagate(TreeNode node, int score, int maxDepth) {
+            // Get the depth of the current node
+            //int currentDepth = 0;
+            TreeNode tempNode = node;
+            while (tempNode != null)
+            {
+                tempNode = tempNode.ParentNode;
+               // currentDepth++;
+            }
+
+            // Update nodes up to root node
+            while (node != null)
             {
                 // Update node visit
                 node.Visits += 1;
 
+                // Calculate reward based on depth
+               // int depthReward = maxDepth - currentDepth;
+                score *= maxDepth; // adjust score according to depth
+
                 // Update node score
                 node.Score += score;
 
-                // set nodeto parent
+                // set node to parent
                 node = node.ParentNode;
             }
         }
