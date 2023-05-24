@@ -76,7 +76,7 @@ namespace TicTacToe
         //{
         //    // Create board instance
         //    Board board = new Board();
-        //    board.GameLoop(board);
+        //    board.GameLoop();
 
         //    Console.Read();
         //}
@@ -96,29 +96,32 @@ namespace TicTacToe
         //    move1.Visits = 2;
         //    move1.Score = 4;
 
-        //    // init move 2
-        //    var move2 = new TreeNode(board.GenerateStates()[1]);
-        //    move2.Visits = 4;
-        //    move2.Score = 8;
+
 
         //    // Create child nodes
-        //    root.Children = new Dictionary<string, TreeNode>()
-        //    {
-        //        { "key1", move1 },
-        //        { "key2", move2 },
-        //        // Add more key-value pairs as needed
-        //    };
+        //    root.Children.Add("key1", move1);
 
         //    // Create MCTS 
         //    MCTS mcts = new MCTS();
 
         //    // Call to get best move assuming search is finished (exploration constant = 0)
         //    TreeNode bestMove = mcts.GetBestMove(root, 0);
+        //    root.Board = bestMove.Board;
+        //    board = bestMove.Board;
         //    board.Print();
+
+        //    // init move 2
+        //    var move2 = new TreeNode(board.GenerateStates()[0]);
+        //    move2.Visits = 4;
+        //    move2.Score = 8;
+
+        //    root.Children.Add("key2", move2);
 
 
         //    // Call to get best move assuming search is finished (exploration constant = 0)
         //    TreeNode bestMove2 = mcts.GetBestMove(root, 2);
+        //    root.Board = bestMove2.Board;
+        //    board = bestMove2.Board;
         //    board.Print();
         //    // WriteObjectProperties(bestMove);
 

@@ -9,10 +9,20 @@ namespace TicTacToe
 {
     public class Board
     {
+        public static void Main(string[] args)
+        {
+            // Create board instance
+            Board board = new Board();
+            board.GameLoop();
+
+            Console.Read();
+        }
+
         // Define players
         public string Player1 { get; set; }
         public string Player2 { get; set; }
         public string EmptySquare { get; set; } = ".";
+        public MCTS MCTS { get; set; }
         //public Player CurrentPlayer { get; set; }
         // Define board position
         public Dictionary<Tuple<int, int>, string> Position { get; set; }
@@ -30,6 +40,9 @@ namespace TicTacToe
                 // define board position
                 Position = new Dictionary<Tuple<int, int>, string>();
 
+                // init MCTS
+                MCTS = new MCTS();
+
                 // init (reset) board
                 InitBoard();
 
@@ -38,6 +51,7 @@ namespace TicTacToe
                 Player1 = board.Player1;
                 Player2 = board.Player2;
                 EmptySquare = board.EmptySquare;
+                MCTS = board.MCTS;
                 Position = new Dictionary<Tuple<int, int>, string>(board.Position);
             }
         }
@@ -55,27 +69,14 @@ namespace TicTacToe
 
         public Board Move(int row, int col)
         {
-            // Create new board instance
-            //Board newBoard = new Board(this);
-            //newBoard.Position[Tuple.Create(row, col)] = Player1;
-            //var temp = newBoard.Player1;
-            //newBoard.Player1 = newBoard.Player2;
-            //newBoard.Player2 = temp;
-            //return newBoard;
-            //-------------------
+
             Board newBoard = Clone();
             newBoard.Position[Tuple.Create(row, col)] = Player1;
             var temp = newBoard.Player1;
             newBoard.Player1 = newBoard.Player2;
             newBoard.Player2 = temp;
             return newBoard;
-            //-------------------
-            //Board newBoard = Clone();
-            //Position[Tuple.Create(row, col)] = Player1;
-            //var temp = Player1;
-            //Player1 = Player2;
-            //Player2 = temp;
-            //return newBoard;
+
         }
 
         public bool IsTie()
@@ -174,8 +175,9 @@ namespace TicTacToe
             return actions;
         }
 
-        public void GameLoop(Board myBoard)
+        public void GameLoop()
         {
+            Board newBoard = new Board();
             Console.WriteLine("\n   Tic Tac Toe by Steven Gates\n");
             Console.WriteLine("   Type 'exit' to quit the game");
             Console.WriteLine("   Move format [x,y]: 1,2 where 1 is column and 2 is row.");
@@ -198,22 +200,32 @@ namespace TicTacToe
                 // Parse user input (move format: [col (x), row (y)]: 1,2)
                 try
                 {
+
                     int row = Convert.ToInt32(userInput.Split(',')[1]) - 1;
                     int col = Convert.ToInt32(userInput.Split(',')[0]) - 1;
 
-                    if (myBoard.Position[Tuple.Create(row, col)] != EmptySquare)
+                    if (newBoard.Position[Tuple.Create(row, col)] != EmptySquare)
                     {
                         Console.WriteLine("Can not chose a move that already been played. Please choose another move.");
                         continue;
                     }
 
                     // Make Move
-                    Move(row, col);
+                    newBoard = Move(row, col);
+                    Position = newBoard.Position;
+                    
 
                     // Make AI move on board
 
+                    // 1. Search for the best move
+                    TreeNode bestMove = newBoard.MCTS.Search(newBoard);
+
+                    // 2. Make the Best Move for AI
+                    newBoard = bestMove.Board;
+                    Position = newBoard.Position;
+
                     // Print Board
-                    myBoard.Print();
+                    newBoard.Print();
 
                     // Check game state
                     if (IsWinner())
@@ -248,27 +260,29 @@ namespace TicTacToe
                 }
                 boardString += "\n";
             }
+            Console.WriteLine($"{boardString}");
 
+            string playerString = String.Empty;
             if (Player1 == "x")
             {
-                boardString = $"\n ---------- \n 'x' Turn: \n ---------- \n" + boardString;
+                playerString = $"\n ---------- \n 'x' Turn: \n ---------- \n";
             }
             else
             {
-                boardString = $"\n ---------- \n 'o' Turn: \n ---------- \n" + boardString;
+                playerString = $"\n ---------- \n 'o' Turn: \n ---------- \n";
             }
-            Console.WriteLine($"{boardString}");
+            Console.WriteLine($"{playerString}");
         }
 
         public Board Clone()
         {
             Board newBoard = new Board()
             {
-                Player1 = string.Copy(this.Player1),
-                Player2 = string.Copy(this.Player2),            
-                EmptySquare = string.Copy(this.EmptySquare),
+                Player1 = string.Copy(Player1),
+                Player2 = string.Copy(Player2),            
+                EmptySquare = string.Copy(EmptySquare),
                 //CurrentPlayer = this.CurrentPlayer.Name == Player_1.Name ? Player_1 : Player_2,
-                Position = new Dictionary<Tuple<int, int>, string>(this.Position),
+                Position = new Dictionary<Tuple<int, int>, string>(Position),
             };
             return newBoard;
         }
