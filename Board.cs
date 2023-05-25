@@ -23,7 +23,7 @@ namespace TicTacToe
         public string Player2 { get; set; }
         public string EmptySquare { get; set; } = ".";
         public MCTS MCTS { get; set; }
-        //public Player CurrentPlayer { get; set; }
+        public string CurrentPlayer { get; set; }
         // Define board position
         public Dictionary<Tuple<int, int>, string> Position { get; set; }
 
@@ -184,8 +184,8 @@ namespace TicTacToe
 
             // Print Board
             Print();
-
-            while (true)
+            bool isGameOver = false;
+            while (!isGameOver)
             {
                 var userInput = Console.ReadLine().ToLower();
 
@@ -213,30 +213,35 @@ namespace TicTacToe
                     // Make Move
                     newBoard = Move(row, col);
                     Position = newBoard.Position;
+                    CurrentPlayer = newBoard.Player1;
                     
-
+                    Console.WriteLine($"Current Player: {CurrentPlayer}");
                     // Make AI move on board
 
                     // 1. Search for the best move
                     TreeNode bestMove = newBoard.MCTS.Search(newBoard);
 
-                    // 2. Make the Best Move for AI
-                    newBoard = bestMove.Board;
-                    Position = newBoard.Position;
-
-                    // Print Board
-                    newBoard.Print();
-
+                    if (bestMove != null) // Could be null if game is over
+                    {
+                        // 2. Make the Best Move for AI
+                        newBoard = bestMove.Board;
+                        Position = newBoard.Position;
+                        CurrentPlayer = newBoard.Player1;
+                        Console.WriteLine($"Current Player: {CurrentPlayer}");
+                        // Print Board
+                        newBoard.Print();
+                    }
                     // Check game state
                     if (IsWinner())
                     {
                         Console.WriteLine($"Player \"{Player2}\" has won the game!\n");
-                        break;
+                        isGameOver = true;
                     }
 
                     if (IsTie())
                     {
                         Console.WriteLine("Game Over. We Tied!");
+                        isGameOver = true;
                     }
 
                 }
@@ -246,6 +251,23 @@ namespace TicTacToe
                     Console.WriteLine("Illegal Command!");
                     Console.WriteLine("   Move format [x,y]: 1,2 where 1 is column and 2 is row.");
                 }
+            }
+            PlayAgain();
+        }
+
+        public void PlayAgain()
+        {
+            Console.WriteLine($"Play again? Press 'y' to continue else any other character.");
+            var playAgain = Console.ReadLine().ToLower();
+            if (playAgain == "y")
+            {
+                // Create board instance
+                Board board = new Board();
+                board.GameLoop();
+            }
+            else
+            {
+                Environment.Exit(0);
             }
         }
 
@@ -286,5 +308,63 @@ namespace TicTacToe
             };
             return newBoard;
         }
+
+        //public bool IsBlockingMove(Tuple<int, int> move, string currentPlayerSymbol)
+        //{
+        //    // First, make a deep copy of the current board position
+        //    var tempBoard = new Dictionary<Tuple<int, int>, string>(Position);
+
+        //    // Place the opponent's symbol in the given move position
+        //    tempBoard[move] = GetOpponentSymbol(currentPlayerSymbol);
+
+        //    // Now, check if this results in a win for the opponent
+        //    return IsWinningPosition(tempBoard);
+        //}
+
+        //private bool IsWinningPosition(Dictionary<Tuple<int, int>, string> boardPosition)
+        //{
+        //    // Define all possible winning combinations
+        //    List<List<Tuple<int, int>>> winningCombinations = new List<List<Tuple<int, int>>>
+        //{
+        //    new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(0, 1), Tuple.Create(0, 2) },
+        //    new List<Tuple<int, int>> { Tuple.Create(1, 0), Tuple.Create(1, 1), Tuple.Create(1, 2) },
+        //    new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(2, 1), Tuple.Create(2, 2) },
+        //    new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 0), Tuple.Create(2, 0) },
+        //    new List<Tuple<int, int>> { Tuple.Create(0, 1), Tuple.Create(1, 1), Tuple.Create(2, 1) },
+        //    new List<Tuple<int, int>> { Tuple.Create(0, 2), Tuple.Create(1, 2), Tuple.Create(2, 2) },
+        //    new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 1), Tuple.Create(2, 2) },
+        //    new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(1, 1), Tuple.Create(0, 2) },
+        //};
+
+        //    // Check each winning combination
+        //    foreach (var combination in winningCombinations)
+        //    {
+        //        string firstPosPlayer = boardPosition[combination[0]];
+        //        if (firstPosPlayer != null &&
+        //            firstPosPlayer == boardPosition[combination[1]] &&
+        //            firstPosPlayer == boardPosition[combination[2]])
+        //        {
+        //            return true;
+        //        }
+        //    }
+
+        //    // No winning combination found
+        //    return false;
+        //}
+
+        //public bool IsWinningMove(TreeNode node)
+        //{
+        //    // Here we pass the board position contained in the TreeNode to IsWinningPosition
+        //    return IsWinningPosition(node.Board.Position, currentPlayerSymbol);
+        //}
+
+        //public bool IsBlockingMove(TreeNode node)
+        //{
+        //    // Here we will assume that the node represents the opponent's next move, so we will check
+        //    // whether this move would result in a win for the opponent. If so, it's a blocking move.
+
+        //    return IsWinningPosition(node.Board.Position, GetOpponentSymbol(currentPlayerSymbol));
+        //}
+
     }
 }
