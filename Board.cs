@@ -36,7 +36,7 @@ namespace TicTacToe
                 Player1 = "x";
                 Player2 = "o";
                 EmptySquare = ".";
-
+                CurrentPlayer = "x";
                 // define board position
                 Position = new Dictionary<Tuple<int, int>, string>();
 
@@ -52,6 +52,7 @@ namespace TicTacToe
                 Player2 = board.Player2;
                 EmptySquare = board.EmptySquare;
                 MCTS = board.MCTS;
+                CurrentPlayer = board.CurrentPlayer;
                 Position = new Dictionary<Tuple<int, int>, string>(board.Position);
             }
         }
@@ -75,6 +76,7 @@ namespace TicTacToe
             var temp = newBoard.Player1;
             newBoard.Player1 = newBoard.Player2;
             newBoard.Player2 = temp;
+            newBoard.CurrentPlayer = newBoard.Player1;
             return newBoard;
 
         }
@@ -213,7 +215,8 @@ namespace TicTacToe
                     // Make Move
                     newBoard = Move(row, col);
                     Position = newBoard.Position;
-                    CurrentPlayer = newBoard.Player1;
+                    newBoard.Print();
+                    CurrentPlayer = newBoard.CurrentPlayer;
                     
                     Console.WriteLine($"Current Player: {CurrentPlayer}");
                     // Make AI move on board
@@ -221,7 +224,7 @@ namespace TicTacToe
                     // 1. Search for the best move
                     TreeNode bestMove = newBoard.MCTS.Search(newBoard);
 
-                    if (bestMove != null) // Could be null if game is over
+                    if (bestMove.Board != null) // Could be null if game is over
                     {
                         // 2. Make the Best Move for AI
                         newBoard = bestMove.Board;
@@ -231,6 +234,7 @@ namespace TicTacToe
                         // Print Board
                         newBoard.Print();
                     }
+                    
                     // Check game state
                     if (IsWinner())
                     {
@@ -303,68 +307,166 @@ namespace TicTacToe
                 Player1 = string.Copy(Player1),
                 Player2 = string.Copy(Player2),            
                 EmptySquare = string.Copy(EmptySquare),
-                //CurrentPlayer = this.CurrentPlayer.Name == Player_1.Name ? Player_1 : Player_2,
+                CurrentPlayer = string.Copy(CurrentPlayer),
                 Position = new Dictionary<Tuple<int, int>, string>(Position),
             };
             return newBoard;
         }
 
-        //public bool IsBlockingMove(Tuple<int, int> move, string currentPlayerSymbol)
-        //{
-        //    // First, make a deep copy of the current board position
-        //    var tempBoard = new Dictionary<Tuple<int, int>, string>(Position);
+        public bool IsBlockingMove(TreeNode node)
+        {
+            string humanPlayer = "x";
+            string aiPlayer = "o";
+            string noPlayer = ".";
+            // Define all possible winning combinations
+            List<List<Tuple<int, int>>> winningCombinations = new List<List<Tuple<int, int>>>
+            {
+                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(0, 1), Tuple.Create(0, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(1, 0), Tuple.Create(1, 1), Tuple.Create(1, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(2, 1), Tuple.Create(2, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 0), Tuple.Create(2, 0) },
+                new List<Tuple<int, int>> { Tuple.Create(0, 1), Tuple.Create(1, 1), Tuple.Create(2, 1) },
+                new List<Tuple<int, int>> { Tuple.Create(0, 2), Tuple.Create(1, 2), Tuple.Create(2, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 1), Tuple.Create(2, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(1, 1), Tuple.Create(0, 2) },
+            };
 
-        //    // Place the opponent's symbol in the given move position
-        //    tempBoard[move] = GetOpponentSymbol(currentPlayerSymbol);
+            // Check each winning combination
+            foreach (var combination in winningCombinations)
+            {
+                string firstPosPlayer = humanPlayer;
+                bool player1HasWinNextRound = false;
 
-        //    // Now, check if this results in a win for the opponent
-        //    return IsWinningPosition(tempBoard);
-        //}
+                // IF Player 1 has Column 0 and 1
+                if (firstPosPlayer == node.Board.Position[combination[0]] &&
+                    firstPosPlayer == node.Board.Position[combination[1]] &&
+                    noPlayer == node.Board.Position[combination[2]])
+                {
+                    player1HasWinNextRound = true;
+                }
 
-        //private bool IsWinningPosition(Dictionary<Tuple<int, int>, string> boardPosition)
-        //{
-        //    // Define all possible winning combinations
-        //    List<List<Tuple<int, int>>> winningCombinations = new List<List<Tuple<int, int>>>
-        //{
-        //    new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(0, 1), Tuple.Create(0, 2) },
-        //    new List<Tuple<int, int>> { Tuple.Create(1, 0), Tuple.Create(1, 1), Tuple.Create(1, 2) },
-        //    new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(2, 1), Tuple.Create(2, 2) },
-        //    new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 0), Tuple.Create(2, 0) },
-        //    new List<Tuple<int, int>> { Tuple.Create(0, 1), Tuple.Create(1, 1), Tuple.Create(2, 1) },
-        //    new List<Tuple<int, int>> { Tuple.Create(0, 2), Tuple.Create(1, 2), Tuple.Create(2, 2) },
-        //    new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 1), Tuple.Create(2, 2) },
-        //    new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(1, 1), Tuple.Create(0, 2) },
-        //};
+                // IF Player 1 has Column 1 and 2
+                else if (
+                    noPlayer == node.Board.Position[combination[0]] &&
+                    firstPosPlayer == node.Board.Position[combination[1]] &&
+                    firstPosPlayer == node.Board.Position[combination[2]])
+                {
+                    player1HasWinNextRound = true;
+                }
 
-        //    // Check each winning combination
-        //    foreach (var combination in winningCombinations)
-        //    {
-        //        string firstPosPlayer = boardPosition[combination[0]];
-        //        if (firstPosPlayer != null &&
-        //            firstPosPlayer == boardPosition[combination[1]] &&
-        //            firstPosPlayer == boardPosition[combination[2]])
-        //        {
-        //            return true;
-        //        }
-        //    }
+                // IF Player 1 has Column 0 and 2
+                else if (
+                    firstPosPlayer == node.Board.Position[combination[0]] &&
+                    noPlayer == node.Board.Position[combination[1]] &&
+                    firstPosPlayer == node.Board.Position[combination[2]])
+                {
+                    player1HasWinNextRound = true;
+                }
 
-        //    // No winning combination found
-        //    return false;
-        //}
+                if (player1HasWinNextRound)
+                {
+                    // Does this current move hold the blocking move for AI?
+                    bool matches = aiPlayer == node.Board.Position[combination[0]] ||
+                                    aiPlayer == node.Board.Position[combination[1]] ||
+                                    aiPlayer == node.Board.Position[combination[2]];
+
+                    return matches;
+                }
+            }
+
+            // No winning combination found
+            return false;
+        }
+
+        private bool IsWinningPosition(Dictionary<Tuple<int, int>, string> boardPosition, string aiPlayer, string humanPlayer)
+        {
+            // Define all possible winning combinations
+            List<List<Tuple<int, int>>> winningCombinations = new List<List<Tuple<int, int>>>
+            {
+                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(0, 1), Tuple.Create(0, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(1, 0), Tuple.Create(1, 1), Tuple.Create(1, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(2, 1), Tuple.Create(2, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 0), Tuple.Create(2, 0) },
+                new List<Tuple<int, int>> { Tuple.Create(0, 1), Tuple.Create(1, 1), Tuple.Create(2, 1) },
+                new List<Tuple<int, int>> { Tuple.Create(0, 2), Tuple.Create(1, 2), Tuple.Create(2, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 1), Tuple.Create(2, 2) },
+                new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(1, 1), Tuple.Create(0, 2) },
+            };
+
+            // Check each winning combination
+            foreach (var combination in winningCombinations)
+            {
+                string firstPosPlayer = humanPlayer;
+                bool player1HasWinNextRound = false;
+
+                // IF Player 1 has Column 0 and 1
+                if (firstPosPlayer == boardPosition[combination[0]] &&
+                    firstPosPlayer == boardPosition[combination[1]])
+                {
+                    player1HasWinNextRound = true;
+                }
+
+                // IF Player 1 has Column 1 and 2
+                if (firstPosPlayer == boardPosition[combination[1]] &&
+                    firstPosPlayer == boardPosition[combination[2]])
+                {
+                    player1HasWinNextRound = true;
+                }
+
+                // IF Player 1 has Column 0 and 2
+                if (firstPosPlayer == boardPosition[combination[0]] &&
+                    firstPosPlayer == boardPosition[combination[2]])
+                {
+                    player1HasWinNextRound = true;
+                }
+
+                if(player1HasWinNextRound) {
+                    // Does this current move hold the blocking move for AI?
+                    bool matches = aiPlayer == boardPosition[combination[0]] ||
+                                    aiPlayer == boardPosition[combination[1]] ||
+                                    aiPlayer == boardPosition[combination[2]];
+
+                    return matches;
+                }
+            }
+
+            // No winning combination found
+            return false;
+        }
 
         //public bool IsWinningMove(TreeNode node)
         //{
         //    // Here we pass the board position contained in the TreeNode to IsWinningPosition
-        //    return IsWinningPosition(node.Board.Position, currentPlayerSymbol);
+        //    return IsWinningPosition(node.Board.Position, "o");
         //}
 
-        //public bool IsBlockingMove(TreeNode node)
-        //{
-        //    // Here we will assume that the node represents the opponent's next move, so we will check
-        //    // whether this move would result in a win for the opponent. If so, it's a blocking move.
+        public bool IsBlockingMove(Tuple<int, int> move, string currentPlayerSymbol)
+        {
+            // First, let's create a copy of the current board
+            Dictionary<Tuple<int, int>, string> boardCopy = new Dictionary<Tuple<int, int>, string>(Position);
 
-        //    return IsWinningPosition(node.Board.Position, GetOpponentSymbol(currentPlayerSymbol));
-        //}
+            // Place the proposed move
+            boardCopy[move] = currentPlayerSymbol;
+
+            // Now we will simulate the opponent's moves
+            foreach (var position in boardCopy.Keys.Where(key => string.IsNullOrEmpty(boardCopy[key])).ToList())
+            {
+                // Place the opponent's symbol
+                boardCopy[position] = (currentPlayerSymbol == "x") ? "o" : "x";
+
+                // If this move results in a win, the original move was a blocking move
+                if (IsWinningPosition(boardCopy))
+                {
+                    return true;
+                }
+
+                // Remove the opponent's symbol for the next simulation
+                boardCopy[position] = string.Empty;
+            }
+
+            // If none of the simulated moves resulted in a win, this is not a blocking move
+            return false;
+        }
 
     }
 }

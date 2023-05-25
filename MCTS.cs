@@ -21,7 +21,7 @@ namespace TicTacToe
             TreeNode root = new TreeNode(board, null);
             if (!root.IsTerminal)
             {
-                for (var i = 0; i < 20000; i++)
+                for (var i = 0; i < 5000; i++)
                 {
                     TreeNode node = Select(root);
                     (int score, int depth) = Rollout(node.Board);
@@ -41,7 +41,7 @@ namespace TicTacToe
             else
             {
                 Console.WriteLine("Not performing search. Game is already over.");
-                return null;
+                return new TreeNode();
             }
         }
 
@@ -52,11 +52,11 @@ namespace TicTacToe
             {
                 if (node.IsFullyExpanded)
                 {
-                    node = GetBestMove(node, 2);
+                    node = GetBestMove(node, .5);
                 }
                 else
                 {
-                    return Expand(node);
+                    node = Expand(node);
                 }
             }
 
@@ -132,7 +132,6 @@ namespace TicTacToe
                         }
                     }
                     board = availableStates[random.Next(availableStates.Count)];
-                    depth--;
                 }
                 catch (Exception e)
                 {
@@ -164,6 +163,7 @@ namespace TicTacToe
         {
             double bestScore = double.NegativeInfinity;
             List<TreeNode> bestMoves = new List<TreeNode>();
+            List<TreeNode> allMoves = new List<TreeNode>();
 
             foreach (KeyValuePair<string, TreeNode> entry in node.Children)
             {
@@ -174,6 +174,8 @@ namespace TicTacToe
                 Console.WriteLine($"Current Board Player: {currentPlayer}");
                 double moveScore = currentPlayer * child.Score / child.Visits + explorationConstant * Math.Sqrt(Math.Log(node.Visits / child.Visits));
                 Console.WriteLine($"Move: {move} has a Score: {moveScore}");
+                allMoves.Add(child);
+
 
                 if (moveScore > bestScore)
                 {
@@ -189,8 +191,8 @@ namespace TicTacToe
 
             // Before choosing a random move from bestMoves, let's check if there is a winning move or a move that prevents an opponent's win among them
             // We will need to implement a check within the Board class to see if a given board state represents a win or a block
-
-            //TreeNode blockingOrWinningMove = bestMoves.Find(move => move.Board.IsWinningMove(move) || move.Board.IsBlockingMove(move));
+            // TODO:  node.Board.IsWinningMove(move) ||
+           // TreeNode blockingOrWinningMove = allMoves.Find(move => node.Board.IsBlockingMove(move));
             //if (blockingOrWinningMove != null)
             //{
             //    return blockingOrWinningMove;
@@ -219,6 +221,11 @@ namespace TicTacToe
             this.ParentNode = treeNode;
             this.Visits = 0;
             this.Children = new Dictionary<string, TreeNode>();            
+        }
+
+        public TreeNode()
+        {
+            // This should never occur unless Player 1 wins
         }
     }
 }
