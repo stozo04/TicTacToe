@@ -440,33 +440,60 @@ namespace TicTacToe
         //    return IsWinningPosition(node.Board.Position, "o");
         //}
 
-        public bool IsBlockingMove(Tuple<int, int> move, string currentPlayerSymbol)
+        //public bool IsBlockingMove(Tuple<int, int> move, string currentPlayerSymbol)
+        //{
+        //    // First, let's create a copy of the current board
+        //    Dictionary<Tuple<int, int>, string> boardCopy = new Dictionary<Tuple<int, int>, string>(Position);
+
+        //    // Place the proposed move
+        //    boardCopy[move] = currentPlayerSymbol;
+
+        //    // Now we will simulate the opponent's moves
+        //    foreach (var position in boardCopy.Keys.Where(key => string.IsNullOrEmpty(boardCopy[key])).ToList())
+        //    {
+        //        // Place the opponent's symbol
+        //        boardCopy[position] = (currentPlayerSymbol == "x") ? "o" : "x";
+
+        //        // If this move results in a win, the original move was a blocking move
+        //        if (IsWinningPosition(boardCopy))
+        //        {
+        //            return true;
+        //        }
+
+        //        // Remove the opponent's symbol for the next simulation
+        //        boardCopy[position] = string.Empty;
+        //    }
+
+        //    // If none of the simulated moves resulted in a win, this is not a blocking move
+        //    return false;
+        //}
+
+        public bool IsBlockingMove2()
         {
-            // First, let's create a copy of the current board
-            Dictionary<Tuple<int, int>, string> boardCopy = new Dictionary<Tuple<int, int>, string>(Position);
+            // Determine the opponent's symbol
 
-            // Place the proposed move
-            boardCopy[move] = currentPlayerSymbol;
-
-            // Now we will simulate the opponent's moves
-            foreach (var position in boardCopy.Keys.Where(key => string.IsNullOrEmpty(boardCopy[key])).ToList())
+            // Iterate through each position on the board
+            foreach (Tuple<int, int> position in this.Position.Keys)
             {
-                // Place the opponent's symbol
-                boardCopy[position] = (currentPlayerSymbol == "x") ? "o" : "x";
-
-                // If this move results in a win, the original move was a blocking move
-                if (IsWinningPosition(boardCopy))
+                // Only consider empty positions
+                if (this.Position[position] == "")
                 {
-                    return true;
-                }
+                    // Make a copy of the current board positions
+                    var copiedBoardPosition = new Dictionary<Tuple<int, int>, string>(this.Position);
 
-                // Remove the opponent's symbol for the next simulation
-                boardCopy[position] = string.Empty;
+                    // Make a hypothetical move for the opponent
+                    copiedBoardPosition[position] = "x";
+
+                    // If this leads to a win for the opponent, it's a blocking move
+                    if (IsWinningPosition(copiedBoardPosition, "o", "x"))
+                    {
+                        return true;
+                    }
+                }
             }
 
-            // If none of the simulated moves resulted in a win, this is not a blocking move
+            // If no blocking move is found
             return false;
         }
-
     }
 }

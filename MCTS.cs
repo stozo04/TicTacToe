@@ -21,7 +21,7 @@ namespace TicTacToe
             TreeNode root = new TreeNode(board, null);
             if (!root.IsTerminal)
             {
-                for (var i = 0; i < 5000; i++)
+                for (var i = 0; i < 10000; i++)
                 {
                     TreeNode node = Select(root);
                     (int score, int depth) = Rollout(node.Board);
@@ -56,7 +56,7 @@ namespace TicTacToe
                 }
                 else
                 {
-                    node = Expand(node);
+                    return Expand(node); // return newly expanded node
                 }
             }
 
@@ -98,6 +98,29 @@ namespace TicTacToe
                 return node;
             }
         }
+        //private TreeNode Expand(TreeNode node)
+        //{
+        //    List<Board> states = node.Board.GenerateStates();
+        //    List<Board> unvisitedStates = states.Where(state => !node.Children.ContainsKey(ComputeMoveKey(node.Board, state))).ToList();
+
+        //    if (unvisitedStates.Count > 0)
+        //    {
+        //        Board stateToExpand = unvisitedStates[random.Next(unvisitedStates.Count)];
+        //        TreeNode newNode = new TreeNode(stateToExpand, node);
+        //        string key = ComputeMoveKey(node.Board, stateToExpand);
+        //        if (!node.Children.ContainsKey(key))
+        //        {
+        //            node.Children.Add(key, newNode);
+        //        }
+        //        node.IsFullyExpanded = node.Children.Count == states.Count;
+        //        return newNode;
+        //    }
+        //    else
+        //    {
+        //        node.IsFullyExpanded = true;
+        //        return node;  // return the current node if it's already fully expanded
+        //    }
+        //}
 
         private string ComputeMoveKey(Board parentBoard, Board childBoard)
         {
@@ -131,7 +154,23 @@ namespace TicTacToe
                             throw new Exception("Game is still ongoing, but no moves are available.");
                         }
                     }
+
+                    // Check if any of the available states blocks the opponent's win
+
+                    //Board blockingState = availableStates.Find(state => state.IsBlockingMove2());
+
+                    //if (blockingState != null)
+                    //{
+                    //    // If a blocking state exists, select it
+                    //    board = blockingState;
+                    //}
+                    //else
+                    //{
+                    //    // If no blocking state exists, select a state randomly
+                    //    board = availableStates[random.Next(availableStates.Count)];
+                    //}
                     board = availableStates[random.Next(availableStates.Count)];
+                    depth--;
                 }
                 catch (Exception e)
                 {
@@ -141,6 +180,7 @@ namespace TicTacToe
             }
             return (board.Player2 == "o" ? 1 : -1, depth);
         }
+
 
         public void Backpropagate(TreeNode node, int score, int maxDepth)
         {
