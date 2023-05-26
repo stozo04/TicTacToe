@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.SqlServer.Server;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,30 +10,27 @@ namespace TicTacToe
     public class MCTS
     {
         public Random random { get; set; }
+        public bool CenterPieceIsOpen { get; set; }
 
         public MCTS()
         {
             random = new Random();
+            CenterPieceIsOpen = true;
         }
 
         // Search for the best move given a position
         public TreeNode Search(Board board)
         {
             TreeNode root = new TreeNode(board, null);
-            // Check if the center is available
-            //if (root.Board.Position.TryGetValue((1, 1), out string centerValue) && centerValue == ".")
-            //{
-            //    // Make a new board with the center occupied by AI
-            //    Board newBoard = new Board(root.Board);
-            //    newBoard.Position[(1, 1)] = "o";
 
-            //    // Make a new node for this board state and return it
-            //    return new TreeNode(newBoard, root);
-            //}
-
+            if (root.Board.Position.TryGetValue((1, 1), out string centerValue) && centerValue == ".")
+            {
+                CenterPieceIsOpen = true;
+            }
+            else { CenterPieceIsOpen = false; }
             if (!root.IsTerminal)
             {
-                for (var i = 0; i < 5000; i++)
+                for (var i = 0; i < 100; i++)
                 {
                     TreeNode node = Select(root);
                     (int score, int depth) = Rollout(node.Board);
@@ -41,7 +39,7 @@ namespace TicTacToe
 
                 try
                 {
-                    return GetBestMove(root, 2); // Using exploration constant of 2 when choosing the best move to perform
+                    return GetBestMove(root, 2, false); // Using exploration constant of 2 when choosing the best move to perform
                 }
                 catch (Exception e)
                 {
@@ -66,7 +64,7 @@ namespace TicTacToe
                 if (node.IsFullyExpanded)
                 {
                     // UCT formula is used here
-                    node = GetBestMove(node, 2);
+                    node = GetBestMove(node, 2, true);
                 }
                 else
                 {
@@ -253,9 +251,9 @@ namespace TicTacToe
             {
                 node.Visits++;
                 // Add bonus to score if the center position was chosen
-                if (node.Board.SelectedPosition == (1, 1))
+                if (node.Board.SelectedPosition == (1, 1) && CenterPieceIsOpen)
                 {
-                    score += 5000; // adjust this value to tweak the importance of choosing the center
+                    score += 5; // adjust this value to tweak the importance of choosing the center
                 }
                 score *= Math.Max(1, maxDepth); // Make sure that we never multiply score with 0 or a negative value
                 node.Score += score;
@@ -263,9 +261,9 @@ namespace TicTacToe
             }
         }
 
-        public TreeNode GetBestMove(TreeNode node, double explorationConstant)
+        public TreeNode GetBestMove(TreeNode node, double explorationConstant, bool duringIteration)
         {
-            double bestScore = double.NegativeInfinity;
+            double bestScore = 0;
             List<TreeNode> bestMoves = new List<TreeNode>();
             List<TreeNode> allMoves = new List<TreeNode>();
 
@@ -275,20 +273,27 @@ namespace TicTacToe
                 string move = entry.Key;  // This is the key representing the move
 
                 int currentPlayer = (node.Board.CurrentPlayer == "x") ? -1 : 1;
-                Console.WriteLine($"Current Board Player: {currentPlayer}");
+                
                 double moveScore = currentPlayer * child.Score / child.Visits + explorationConstant * Math.Sqrt(Math.Log(node.Visits / child.Visits));
-                Console.WriteLine($"Move: {move} has a Score: {moveScore}");
+              
                 allMoves.Add(child);
 
 
                 if (moveScore > bestScore)
                 {
+                    Console.WriteLine($"Move: {move} has a the HIGHEST Score: {moveScore}. duringIteration: {duringIteration} ");
                     bestScore = moveScore;
                     bestMoves.Clear();
                     bestMoves.Add(child);
                 }
                 else if (moveScore == bestScore)
                 {
+                    bestMoves.Add(child);
+                }
+                else
+                {
+                    bestScore = 0;
+                    bestMoves.Clear();
                     bestMoves.Add(child);
                 }
             }
