@@ -19,9 +19,20 @@ namespace TicTacToe
         public TreeNode Search(Board board)
         {
             TreeNode root = new TreeNode(board, null);
+            // Check if the center is available
+            //if (root.Board.Position.TryGetValue((1, 1), out string centerValue) && centerValue == ".")
+            //{
+            //    // Make a new board with the center occupied by AI
+            //    Board newBoard = new Board(root.Board);
+            //    newBoard.Position[(1, 1)] = "o";
+
+            //    // Make a new node for this board state and return it
+            //    return new TreeNode(newBoard, root);
+            //}
+
             if (!root.IsTerminal)
             {
-                for (var i = 0; i < 10000; i++)
+                for (var i = 0; i < 5000; i++)
                 {
                     TreeNode node = Select(root);
                     (int score, int depth) = Rollout(node.Board);
@@ -30,7 +41,7 @@ namespace TicTacToe
 
                 try
                 {
-                    return GetBestMove(root, .5); // Using exploration constant of 2 when choosing the best move to perform
+                    return GetBestMove(root, 2); // Using exploration constant of 2 when choosing the best move to perform
                 }
                 catch (Exception e)
                 {
@@ -48,52 +59,69 @@ namespace TicTacToe
         // Select most promising node
         public TreeNode Select(TreeNode node)
         {
+            // Continue to select the next node until we reach a terminal node.
             while (!node.IsTerminal)
             {
+                // If the node is fully expanded (all child nodes have been visited), then we should choose the next node using the UCT formula.
                 if (node.IsFullyExpanded)
                 {
-                    node = GetBestMove(node, .5);
+                    // UCT formula is used here
+                    node = GetBestMove(node, 2);
                 }
                 else
                 {
-                    return Expand(node); // return newly expanded node
+                    // If the node is not fully expanded, then we should expand the node and visit a new child.
+                    // We'll use a different method to handle node expansion (you can name it as ExpandAndVisit).
+                    // The ExpandAndVisit method is responsible for expanding the node (if it's not already fully expanded) and visiting a new child.
+                    return Expand(node);
                 }
             }
 
+            // Return the selected leaf node
             return node;
+
         }
 
         private TreeNode Expand(TreeNode node)
         {
-            List<Board> states = node.Board.GenerateStates();
-            List<Board> unvisitedStates = states.Where(state => !node.Children.ContainsKey(ComputeMoveKey(node.Board, state))).ToList();
+            // Get the possible next states of the game.
+            List<Board> possibleStates = node.Board.GenerateStates();
 
-            foreach (var state in states)
+            // Create a list to keep track of states that have not been visited yet.
+            List<Board> unvisitedStates = new List<Board>();
+
+            foreach (var state in possibleStates)
             {
-                foreach (var position in state.Position.Keys)
+                // Compute the key of the state which corresponds to the move that led to this state.
+                string key = ComputeMoveKey(node.Board, state);
+
+                // Check if this state has been visited before by looking at the children of the node.
+                if (!node.Children.ContainsKey(key))
                 {
-                    string key = $"{position.Item1},{position.Item2}";
-                    if (!node.Children.ContainsKey(key))
-                    {
-                        unvisitedStates.Add(state);
-                    }
+                    // If it hasn't been visited, add it to the list of unvisited states.
+                    unvisitedStates.Add(state);
                 }
             }
 
+            // If there are unvisited states, select one at random to expand.
             if (unvisitedStates.Count > 0)
             {
                 Board stateToExpand = unvisitedStates[random.Next(unvisitedStates.Count)];
                 TreeNode newNode = new TreeNode(stateToExpand, node);
                 string key = ComputeMoveKey(node.Board, stateToExpand);
-                if (!node.Children.ContainsKey(key))
-                {
-                    node.Children.Add(key, newNode);
-                }
-                node.IsFullyExpanded = unvisitedStates.Count == 1;
+
+                // Add the new node to the children of the current node.
+                node.Children.Add(key, newNode);
+
+                // Update the 'IsFullyExpanded' property of the node.
+                node.IsFullyExpanded = (unvisitedStates.Count == 1);
+
+                // Return the newly created node.
                 return newNode;
             }
             else
             {
+                // If there are no unvisited states, mark the node as fully expanded and return it.
                 node.IsFullyExpanded = true;
                 return node;
             }
@@ -124,7 +152,7 @@ namespace TicTacToe
 
         private string ComputeMoveKey(Board parentBoard, Board childBoard)
         {
-            foreach (Tuple<int, int> position in parentBoard.Position.Keys)
+            foreach (var position in parentBoard.Position.Keys)
             {
                 if (parentBoard.Position[position] != childBoard.Position[position])
                 {
@@ -134,7 +162,6 @@ namespace TicTacToe
 
             throw new Exception("No move found between parent and child boards");
         }
-
         public (int, int) Rollout(Board board)
         {
             int depth = 9;
@@ -180,6 +207,38 @@ namespace TicTacToe
             }
             return (board.Player2 == "o" ? 1 : -1, depth);
         }
+        //private (int, int) Rollout(TreeNode node)
+        //{
+        //    // Clone the board to avoid modifying the actual game state
+        //    Board simulatedBoard = node.Board.Clone();
+
+        //    // This is used to track the depth of the rollout for scoring purposes
+        //    int depth = 0;
+
+        //    // Simulate the game until we reach a terminal state
+        //    while (!simulatedBoard.IsWinner() && !simulatedBoard.IsTie())
+        //    {
+        //        depth++;
+
+        //        // Generate possible states
+        //        List<Board> availableStates = simulatedBoard.GenerateStates();
+
+        //        // Check if the center is available
+        //        // Find an available board where the center is empty
+        //        Board centerMove = availableStates.Find(state => state.Position.TryGetValue((1, 1), out string centerValue) && centerValue == ".");
+
+        //        if (centerMove != null && simulatedBoard.SelectedPosition == centerMove.SelectedPosition)
+        //        {
+        //            return (100, 100);
+        //        }
+
+
+        //        // If none of the above moves are available, choose a random move
+        //        simulatedBoard = availableStates[random.Next(availableStates.Count)];
+        //    }
+
+        //}
+
 
 
         public void Backpropagate(TreeNode node, int score, int maxDepth)
@@ -192,7 +251,12 @@ namespace TicTacToe
 
             while (node != null)
             {
-                node.Visits += 1;
+                node.Visits++;
+                // Add bonus to score if the center position was chosen
+                if (node.Board.SelectedPosition == (1, 1))
+                {
+                    score += 5000; // adjust this value to tweak the importance of choosing the center
+                }
                 score *= Math.Max(1, maxDepth); // Make sure that we never multiply score with 0 or a negative value
                 node.Score += score;
                 node = node.ParentNode;

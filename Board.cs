@@ -24,8 +24,9 @@ namespace TicTacToe
         public string EmptySquare { get; set; } = ".";
         public MCTS MCTS { get; set; }
         public string CurrentPlayer { get; set; }
+        public (int, int) SelectedPosition { get; set; }
         // Define board position
-        public Dictionary<Tuple<int, int>, string> Position { get; set; }
+        public Dictionary<(int, int), string> Position { get; set; }
 
         // Default constructor
         public Board(Board board = null)
@@ -38,8 +39,8 @@ namespace TicTacToe
                 EmptySquare = ".";
                 CurrentPlayer = "x";
                 // define board position
-                Position = new Dictionary<Tuple<int, int>, string>();
-
+                Position = new Dictionary<(int, int), string>();
+                SelectedPosition = (-1, -1);
                 // init MCTS
                 MCTS = new MCTS();
 
@@ -53,7 +54,8 @@ namespace TicTacToe
                 EmptySquare = board.EmptySquare;
                 MCTS = board.MCTS;
                 CurrentPlayer = board.CurrentPlayer;
-                Position = new Dictionary<Tuple<int, int>, string>(board.Position);
+                SelectedPosition = board.SelectedPosition;
+                Position = new Dictionary<(int, int), string>(board.Position);
             }
         }
         // Init board
@@ -63,16 +65,16 @@ namespace TicTacToe
             {
                 for (int col = 0; col < 3; col++)
                 {
-                    Position[Tuple.Create(row, col)] = EmptySquare;
+                    Position[(row, col)] = EmptySquare;
                 }
             }
         }
 
         public Board Move(int row, int col)
         {
-
             Board newBoard = Clone();
-            newBoard.Position[Tuple.Create(row, col)] = Player1;
+            newBoard.Position[(row, col)] = Player1;
+            newBoard.SelectedPosition = (row, col);
             var temp = newBoard.Player1;
             newBoard.Player1 = newBoard.Player2;
             newBoard.Player2 = temp;
@@ -91,12 +93,12 @@ namespace TicTacToe
             // Check for vertical matches
             for (int col = 0; col < 3; col++)
             {
-                List<Tuple<int, int>> winningSequence = new List<Tuple<int, int>>();
+                List<(int, int)> winningSequence = new List<(int, int)>();
                 for (int row = 0; row < 3; row++)
                 {
-                    if (Position[Tuple.Create(row, col)] == Player2)
+                    if (Position[(row, col)] == Player2)
                     {
-                        winningSequence.Add(Tuple.Create(row, col));
+                        winningSequence.Add((row, col));
                     }
                     if (winningSequence.Count == 3)
                     {
@@ -108,12 +110,12 @@ namespace TicTacToe
             // Check for horizontal matches
             for (int row = 0; row < 3; row++)
             {
-                List<Tuple<int, int>> winningSequence = new List<Tuple<int, int>>();
+                List<(int, int)> winningSequence = new List<(int, int)>();
                 for (int col = 0; col < 3; col++)
                 {
-                    if (Position[Tuple.Create(row, col)] == Player2)
+                    if (Position[(row, col)] == Player2)
                     {
-                        winningSequence.Add(Tuple.Create(row, col));
+                        winningSequence.Add((row, col));
                     }
                     if (winningSequence.Count == 3)
                     {
@@ -123,12 +125,12 @@ namespace TicTacToe
             }
 
             // Check for right diagonal match
-            List<Tuple<int, int>> winningSequence1 = new List<Tuple<int, int>>();
+            List<(int, int)> winningSequence1 = new List<(int, int)>();
             for (int row = 0; row < 3; row++)
             {
-                if (Position[Tuple.Create(row, row)] == Player2)
+                if (Position[(row, row)] == Player2)
                 {
-                    winningSequence1.Add(Tuple.Create(row, row));
+                    winningSequence1.Add((row, row));
                 }
                 if (winningSequence1.Count == 3)
                 {
@@ -137,13 +139,13 @@ namespace TicTacToe
             }
 
             // Check for left diagonal match
-            List<Tuple<int, int>> winningSequence2 = new List<Tuple<int, int>>();
+            List<(int, int)> winningSequence2 = new List<(int, int)>();
             for (int row = 0; row < 3; row++)
             {
                 int col = 2 - row;
-                if (Position[Tuple.Create(row, col)] == Player2)
+                if (Position[(row, col)] == Player2)
                 {
-                    winningSequence2.Add(Tuple.Create(row, col));
+                    winningSequence2.Add((row, col));
                 }
                 if (winningSequence2.Count == 3)
                 {
@@ -165,7 +167,7 @@ namespace TicTacToe
                 // Loop over board columns
                 for (int col = 0; col < 3; col++)
                 {
-                    if (Position[Tuple.Create(row, col)] == EmptySquare)
+                    if (Position[(row, col)] == EmptySquare)
                     {
                         // Append available action/board state
                         actions.Add(Move(row, col));
@@ -206,7 +208,7 @@ namespace TicTacToe
                     int row = Convert.ToInt32(userInput.Split(',')[1]) - 1;
                     int col = Convert.ToInt32(userInput.Split(',')[0]) - 1;
 
-                    if (newBoard.Position[Tuple.Create(row, col)] != EmptySquare)
+                    if (newBoard.Position[(row, col)] != EmptySquare)
                     {
                         Console.WriteLine("Can not chose a move that already been played. Please choose another move.");
                         continue;
@@ -214,6 +216,7 @@ namespace TicTacToe
 
                     // Make Move
                     newBoard = Move(row, col);
+                    Console.WriteLine($"A move was made to {newBoard.SelectedPosition.ToString()}");
                     Position = newBoard.Position;
                     newBoard.Print();
                     CurrentPlayer = newBoard.CurrentPlayer;
@@ -282,7 +285,7 @@ namespace TicTacToe
             {
                 for (int col = 0; col < 3; col++)
                 {
-                    boardString += $" {Position[Tuple.Create(row, col)]}";
+                    boardString += $" {Position[(row, col)]}";
                 }
                 boardString += "\n";
             }
@@ -308,7 +311,8 @@ namespace TicTacToe
                 Player2 = string.Copy(Player2),            
                 EmptySquare = string.Copy(EmptySquare),
                 CurrentPlayer = string.Copy(CurrentPlayer),
-                Position = new Dictionary<Tuple<int, int>, string>(Position),
+                Position = new Dictionary<(int, int), string>(Position),
+                SelectedPosition = SelectedPosition
             };
             return newBoard;
         }
@@ -319,17 +323,17 @@ namespace TicTacToe
             string aiPlayer = "o";
             string noPlayer = ".";
             // Define all possible winning combinations
-            List<List<Tuple<int, int>>> winningCombinations = new List<List<Tuple<int, int>>>
-            {
-                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(0, 1), Tuple.Create(0, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(1, 0), Tuple.Create(1, 1), Tuple.Create(1, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(2, 1), Tuple.Create(2, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 0), Tuple.Create(2, 0) },
-                new List<Tuple<int, int>> { Tuple.Create(0, 1), Tuple.Create(1, 1), Tuple.Create(2, 1) },
-                new List<Tuple<int, int>> { Tuple.Create(0, 2), Tuple.Create(1, 2), Tuple.Create(2, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 1), Tuple.Create(2, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(1, 1), Tuple.Create(0, 2) },
-            };
+            List<List<(int, int)>> winningCombinations = new List<List<(int, int)>>
+                {
+                    new List<(int, int)> { (0, 0), (0, 1), (0, 2) },
+                    new List<(int, int)> { (1, 0), (1, 1), (1, 2) },
+                    new List<(int, int)> { (2, 0), (2, 1), (2, 2) },
+                    new List<(int, int)> { (0, 0), (1, 0), (2, 0) },
+                    new List<(int, int)> { (0, 1), (1, 1), (2, 1) },
+                    new List<(int, int)> { (0, 2), (1, 2), (2, 2) },
+                    new List<(int, int)> { (0, 0), (1, 1), (2, 2) },
+                    new List<(int, int)> { (2, 0), (1, 1), (0, 2) }
+                };
 
             // Check each winning combination
             foreach (var combination in winningCombinations)
@@ -378,20 +382,20 @@ namespace TicTacToe
             return false;
         }
 
-        private bool IsWinningPosition(Dictionary<Tuple<int, int>, string> boardPosition, string aiPlayer, string humanPlayer)
+        private bool IsWinningPosition(Dictionary<(int, int), string> boardPosition, string aiPlayer, string humanPlayer)
         {
             // Define all possible winning combinations
-            List<List<Tuple<int, int>>> winningCombinations = new List<List<Tuple<int, int>>>
-            {
-                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(0, 1), Tuple.Create(0, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(1, 0), Tuple.Create(1, 1), Tuple.Create(1, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(2, 1), Tuple.Create(2, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 0), Tuple.Create(2, 0) },
-                new List<Tuple<int, int>> { Tuple.Create(0, 1), Tuple.Create(1, 1), Tuple.Create(2, 1) },
-                new List<Tuple<int, int>> { Tuple.Create(0, 2), Tuple.Create(1, 2), Tuple.Create(2, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(0, 0), Tuple.Create(1, 1), Tuple.Create(2, 2) },
-                new List<Tuple<int, int>> { Tuple.Create(2, 0), Tuple.Create(1, 1), Tuple.Create(0, 2) },
-            };
+            List<List<(int, int)>> winningCombinations = new List<List<(int, int)>>
+                {
+                    new List<(int, int)> { (0, 0), (0, 1), (0, 2) },
+                    new List<(int, int)> { (1, 0), (1, 1), (1, 2) },
+                    new List<(int, int)> { (2, 0), (2, 1), (2, 2) },
+                    new List<(int, int)> { (0, 0), (1, 0), (2, 0) },
+                    new List<(int, int)> { (0, 1), (1, 1), (2, 1) },
+                    new List<(int, int)> { (0, 2), (1, 2), (2, 2) },
+                    new List<(int, int)> { (0, 0), (1, 1), (2, 2) },
+                    new List<(int, int)> { (2, 0), (1, 1), (0, 2) }
+                };
 
             // Check each winning combination
             foreach (var combination in winningCombinations)
@@ -468,32 +472,32 @@ namespace TicTacToe
         //    return false;
         //}
 
-        public bool IsBlockingMove2()
-        {
-            // Determine the opponent's symbol
+        //public bool IsBlockingMove2()
+        //{
+        //    // Determine the opponent's symbol
 
-            // Iterate through each position on the board
-            foreach (Tuple<int, int> position in this.Position.Keys)
-            {
-                // Only consider empty positions
-                if (this.Position[position] == "")
-                {
-                    // Make a copy of the current board positions
-                    var copiedBoardPosition = new Dictionary<Tuple<int, int>, string>(this.Position);
+        //    // Iterate through each position on the board
+        //    foreach (List<(int, int)> position in this.Position.Keys)
+        //    {
+        //        // Only consider empty positions
+        //        if (this.Position[position] == "")
+        //        {
+        //            // Make a copy of the current board positions
+        //            var copiedBoardPosition = new Dictionary<Tuple<int, int>, string>(this.Position);
 
-                    // Make a hypothetical move for the opponent
-                    copiedBoardPosition[position] = "x";
+        //            // Make a hypothetical move for the opponent
+        //            copiedBoardPosition[position] = "x";
 
-                    // If this leads to a win for the opponent, it's a blocking move
-                    if (IsWinningPosition(copiedBoardPosition, "o", "x"))
-                    {
-                        return true;
-                    }
-                }
-            }
+        //            // If this leads to a win for the opponent, it's a blocking move
+        //            if (IsWinningPosition(copiedBoardPosition, "o", "x"))
+        //            {
+        //                return true;
+        //            }
+        //        }
+        //    }
 
-            // If no blocking move is found
-            return false;
-        }
+        //    // If no blocking move is found
+        //    return false;
+        //}
     }
 }
