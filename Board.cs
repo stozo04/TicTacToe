@@ -1,22 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace TicTacToe
 {
     public class Board
     {
-        public static void Main(string[] args)
-        {
-            // Create board instance
-            Board board = new Board();
-            board.GameLoop();
-
-            Console.Read();
-        }
 
         // Define players
         public string Player1 { get; set; }
@@ -31,7 +20,7 @@ namespace TicTacToe
         // Default constructor
         public Board(Board board = null)
         {
-            if(board == null)
+            if (board == null)
             {
                 // initialize players
                 Player1 = "x";
@@ -47,7 +36,8 @@ namespace TicTacToe
                 // init (reset) board
                 InitBoard();
 
-            }else
+            }
+            else
             {
                 Player1 = board.Player1;
                 Player2 = board.Player2;
@@ -85,7 +75,7 @@ namespace TicTacToe
 
         public bool IsTie()
         {
-            return (Position.Values.Contains(EmptySquare) ? false : true);
+            return !Position.Values.Contains(EmptySquare);
         }
 
         public bool IsWinner()
@@ -216,11 +206,11 @@ namespace TicTacToe
 
                     // Make Move
                     newBoard = Move(row, col);
-                    Console.WriteLine($"A move was made to {newBoard.SelectedPosition.ToString()}");
+                    Console.WriteLine($"A move was made to {newBoard.SelectedPosition}");
                     Position = newBoard.Position;
                     newBoard.Print();
                     CurrentPlayer = newBoard.CurrentPlayer;
-                    
+
                     Console.WriteLine($"Current Player: {CurrentPlayer}");
                     // Make AI move on board
 
@@ -237,7 +227,7 @@ namespace TicTacToe
                         // Print Board
                         newBoard.Print();
                     }
-                    
+
                     // Check game state
                     if (IsWinner())
                     {
@@ -308,7 +298,7 @@ namespace TicTacToe
             Board newBoard = new Board()
             {
                 Player1 = string.Copy(Player1),
-                Player2 = string.Copy(Player2),            
+                Player2 = string.Copy(Player2),
                 EmptySquare = string.Copy(EmptySquare),
                 CurrentPlayer = string.Copy(CurrentPlayer),
                 Position = new Dictionary<(int, int), string>(Position),
@@ -424,7 +414,8 @@ namespace TicTacToe
                     player1HasWinNextRound = true;
                 }
 
-                if(player1HasWinNextRound) {
+                if (player1HasWinNextRound)
+                {
                     // Does this current move hold the blocking move for AI?
                     bool matches = aiPlayer == boardPosition[combination[0]] ||
                                     aiPlayer == boardPosition[combination[1]] ||

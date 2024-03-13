@@ -1,13 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System;
 
 namespace TicTacToe
 {
-    class Program
+    internal class Program
     {
 
         //static void Main(string[] args)
@@ -40,7 +35,7 @@ namespace TicTacToe
         // }
 
         // Shows all available moves
-        //static void Main(string[] args)
+        //private static void Main()
         //{
         //    // Create board instance
         //    Board board = new Board();
@@ -72,14 +67,14 @@ namespace TicTacToe
         //}
 
         // Play game one move at a time
-        //static void Main(string[] args)
-        //{
-        //    // Create board instance
-        //    Board board = new Board();
-        //    board.GameLoop();
+        private static void Main()
+        {
+            // Create board instance
+            Board board = new Board();
+            board.GameLoop();
 
-        //    Console.Read();
-        //}
+            Console.Read();
+        }
 
         // TEST MCTS LOGIC
         //static void Main(string[] args)
@@ -128,41 +123,8 @@ namespace TicTacToe
         //    Console.Read();
         //}
 
-        // AI vs AI
-        //static void Main(string[] args)
-        //{
-        //    // Create board instance
-        //    Board board = new Board();
-
-        //    // Create MCTS 
-        //    MCTS mcts = new MCTS();
-
-        //    for (int i = 0; i < 100; i++)
-        //    {
-        //        // Find the best move
-        //        var bestMove = mcts.Search(board);
-
-        //        // Make best move on board
-        //        board = bestMove.Board;
-
-        //        board.Print();
-
-        //    }
 
 
-        //    Console.Read();
-        //}
 
-        static void WriteObjectProperties(object obj)
-        {
-            Type type = obj.GetType();
-            PropertyInfo[] properties = type.GetProperties();
-
-            foreach (PropertyInfo property in properties)
-            {
-                object value = property.GetValue(obj);
-                Console.WriteLine($"{property.Name}: {value}");
-            }
-        }
     }
 }

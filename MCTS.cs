@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace TicTacToe
 {
@@ -19,17 +20,17 @@ namespace TicTacToe
             TreeNode root = new TreeNode(board, null);
             if (!root.IsTerminal)
             {
-                for (var i = 0; i < 50000 && !root.IsTerminal; i++)
+                for (var i = 0; i < 4000 && !root.IsTerminal; i++)
                 {
                     TreeNode selectedNode = Select(root);
                     selectedNode = Expand(selectedNode);
-                    (int score, int depth) = Rollout(selectedNode.Board);
-                    Backpropagate(selectedNode, score, depth);
+                    int score = Rollout(selectedNode.Board);
+                    Backpropagate(selectedNode, score);
                 }
 
                 try
                 {
-                    return GetBestMove(root); // Using exploration constant of 2 when choosing the best move to perform
+                    return SelectNodeToPlay(root); // Using exploration constant of 2 when choosing the best move to perform
                 }
                 catch (Exception e)
                 {
@@ -44,13 +45,46 @@ namespace TicTacToe
             }
         }
 
+        private TreeNode SelectNodeToPlay(TreeNode root)
+        {
+            double bestScore = Double.NegativeInfinity;
+            List<TreeNode> bestMoves = new List<TreeNode>();
+
+            foreach (KeyValuePair<string, TreeNode> entry in root.Children)
+            {
+                TreeNode child = entry.Value;
+                string move = entry.Key;  // This is the key representing the move
+
+
+
+                Console.WriteLine($"Move: {move} has Score: {child.Score}");
+                if (child.Score > bestScore)
+                {
+                    //Console.WriteLine($"Move: {move} has a the HIGHEST Score: {total}");
+                    bestScore = child.Score;
+                    bestMoves.Clear();
+                    bestMoves.Add(child);
+                }
+                else if (child.Score == bestScore)
+                {
+                    bestMoves.Add(child);
+                }
+
+            }
+
+            Console.WriteLine($"--------------------------");
+            int randomMove = random.Next(bestMoves.Count);
+            return bestMoves[randomMove];
+
+        }
+
         public TreeNode Select(TreeNode node)
         {
             while (!node.IsTerminal)
             {
                 if (node.IsFullyExpanded)
                 {
-                    node = node.SelectChild();
+                    return GetNodeByUCB1(node);
                 }
                 else
                 {
@@ -58,6 +92,43 @@ namespace TicTacToe
                 }
             }
             return node;
+        }
+
+        private TreeNode GetNodeByUCB1(TreeNode node)
+        {
+            double bestScore = Double.NegativeInfinity;
+            List<TreeNode> bestMoves = new List<TreeNode>();
+
+            foreach (KeyValuePair<string, TreeNode> entry in node.Children)
+            {
+                TreeNode child = entry.Value;
+                string move = entry.Key;  // This is the key representing the move
+
+                int exploitation = child.Score / child.Visits;
+                double exploration = Math.Sqrt(
+                    (2 * Math.Log(node.Visits)) / child.Visits
+                );
+                double total = exploitation + exploration;
+
+               // Console.WriteLine($"Move: {move} has Score: {total}");
+                if (total > bestScore)
+                {
+                    //Console.WriteLine($"Move: {move} has a the HIGHEST Score: {total}");
+                    bestScore = total;
+                    bestMoves.Clear();
+                    bestMoves.Add(child);
+                }
+                else if (total == bestScore)
+                {
+                    bestMoves.Add(child);
+                }
+
+            }
+
+           // Console.WriteLine($"--------------------------");
+            int randomMove = random.Next(bestMoves.Count);
+            return bestMoves[randomMove];
+
         }
 
         private TreeNode Expand(TreeNode node)
@@ -91,8 +162,6 @@ namespace TicTacToe
             node.IsFullyExpanded = true;
             return node;
         }
-
-
         private string ComputeMoveKey(Board parentBoard, Board childBoard)
         {
             foreach (var position in parentBoard.Position.Keys)
@@ -105,9 +174,8 @@ namespace TicTacToe
 
             throw new Exception("No move found between parent and child boards");
         }
-        public (int, int) Rollout(Board board)
+        public int Rollout(Board board)
         {
-            int depth = 0;
             while (!board.IsWinner() && !board.IsTie())
             {
                 List<Board> availableStates = board.GenerateStates();
@@ -117,37 +185,25 @@ namespace TicTacToe
                 }
 
                 board = availableStates[random.Next(availableStates.Count)];
-                depth++;
             }
 
             if (board.IsTie())
             {
-                return (0, depth);
+                return 0;
             }
 
-            // Player2 (o) wins.
-            if (board.IsWinner() && board.CurrentPlayer == "o")
-            {
-                return (1, depth);
-            }
-
-            // Player1 (x) wins.
-            return (-1, depth);
+            return (board.IsWinner() && board.CurrentPlayer == "o") ? -1 : 1;
         }
-
-
-
-        public void Backpropagate(TreeNode node, int score, int maxDepth)
+        public void Backpropagate(TreeNode node, int score)
         {
             while (node != null)
             {
                 node.Visits++;
-                score *= Math.Max(1, maxDepth); // Make sure that we never multiply score with 0 or a negative value
+                // Make sure that we never multiply score with 0 or a negative value
                 node.Score += score;
                 node = node.ParentNode;
             }
         }
-
         public TreeNode GetBestMove(TreeNode node)
         {
 
@@ -165,10 +221,10 @@ namespace TicTacToe
                 double total = exploitation + exploration;
                 // int currentPlayer = (node.Board.CurrentPlayer == "x") ? -1 : 1;
                 //double moveScore = currentPlayer * child.Score / child.Visits + explorationConstant * Math.Sqrt(Math.Log(node.Visits / child.Visits));
-
+                Console.WriteLine($"Move: {move} has Score: {total}");
                 if (total > bestScore)
                 {
-                    Console.WriteLine($"Move: {move} has a the HIGHEST Score: {total}");
+                   // Console.WriteLine($"Move: {move} has a the HIGHEST Score: {total}");
                     bestScore = total;
                     bestMoves.Clear();
                     bestMoves.Add(child);
@@ -218,8 +274,12 @@ namespace TicTacToe
         public double UCB1(TreeNode childNode)
         {
             double C = Math.Sqrt(2);
-            if (childNode.Visits == 0) return double.MaxValue; // Ensure unvisited nodes are selected first
+            if (childNode.Visits == 0)
+            {
+                return double.MaxValue;
+            }// Ensure unvisited nodes are selected first
             return childNode.Score / (double)childNode.Visits + C * Math.Sqrt(Math.Log(Visits) / childNode.Visits);
+
         }
     }
 
